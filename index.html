@@ -4,13 +4,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bellepost</title>
+<title>Bellepost 💜</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #101018;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 28px 20px;
+  text-align: center;
+  background: #21172e;
+}
+h1 { color: #c78aff; }
+p { color: #b9b3c5; }
+main { padding: 20px; }
+.card {
+  background: #211d2b;
+  border: 1px solid #382c49;
+  padding: 20px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+button {
+  background: #a66bfa;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 12px;
+}
+textarea, input {
+  width: 100%;
+  padding: 14px;
+  background: #15121d;
+  color: white;
+  border: 1px solid #554365;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-size: 16px;
+}
+textarea { min-height: 130px; }
+.hidden { display: none; }
+small { color: #aaa; }
+</style>
 </head>
-<body style="background:#eee6ff;text-align:center;font-family:Arial;padding:40px">
-<h1>💜 Bellepost</h1>
-<p>🇫🇷 Bienvenue !</p>
-<p>🇬🇧 Welcome!</p>
-<p>🇷🇺 Добро пожаловать!</p>
-<h2>Mon application fonctionne 🎉</h2>
+<body>
+
+<header>
+  <h1>💜 Bellepost</h1>
+  <p>Ton assistant de publication Telegram ✨</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>📢 Mon canal</h2>
+    <p>Organise les publications de ton canal.</p>
+    <input id="canal" placeholder="@nom_du_canal">
+    <button onclick="saveChannel()">
+      💜 Enregistrer mon canal
+    </button>
+  </div>
+
+  <div class="card">
+    <h2>✍️ Créer un post</h2>
+    <textarea id="post"
+      placeholder="Écris ton message ici..."></textarea>
+    <button onclick="preparePost()">
+      🚀 Préparer mon post
+    </button>
+  </div>
+
+  <div class="card">
+    <h2>📅 Programmer un post</h2>
+    <input type="datetime-local" id="date">
+    <button onclick="schedulePost()">
+      💜 Enregistrer la programmation
+    </button>
+    <small>
+      La programmation est enregistrée
+      sur cet appareil uniquement.
+    </small>
+  </div>
+
+  <div class="card">
+    <h2>🗂️ Mes publications</h2>
+    <div id="posts"></div>
+  </div>
+</main>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) tg.ready();
+
+const key = "bellepost_posts";
+const channelKey = "bellepost_channel";
+
+document.getElementById("canal").value =
+  localStorage.getItem(channelKey) || "";
+
+function saveChannel() {
+  const channel =
+    document.getElementById("canal").value.trim();
+  localStorage.setItem(channelKey, channel);
+  alert("💜 Canal enregistré !");
+}
+
+function preparePost() {
+  const message =
+    document.getElementById("post").value.trim();
+
+  if (!message) {
+    alert("Écris un message d'abord !");
+    return;
+  }
+
+  const url =
+    "https://t.me/share/url?text=" +
+    encodeURIComponent(message);
+
+  window.open(url, "_blank");
+}
+
+function schedulePost() {
+  const message =
+    document.getElementById("post").value.trim();
+  const date =
+    document.getElementById("date").value;
+
+  if (!message || !date) {
+    alert("Ajoute un message et une date !");
+    return;
+  }
+
+  if (new Date(date).getTime() <= Date.now()) {
+    alert("Choisis une date dans le futur.");
+    return;
+  }
+
+  const posts =
+    JSON.parse(localStorage.getItem(key) || "[]");
+
+  posts.push({ message, date });
+  localStorage.setItem(key, JSON.stringify(posts));
+
+  showPosts();
+  alert("💜 Programmation enregistrée !");
+}
+
+function showPosts() {
+  const posts =
+    JSON.parse(localStorage.getItem(key) || "[]");
+
+  const container = document.getElementById("posts");
+  container.replaceChildren();
+
+  if (!posts.length) {
+    container.textContent = "Aucun post programmé.";
+    return;
+  }
+
+  posts.forEach((post) => {
+    const p = document.createElement("p");
+    p.textContent =
+      "💜 " + post.message + " — " +
+      new Date(post.date).toLocaleString("fr-FR");
+    container.appendChild(p);
+  });
+}
+
+showPosts();
+</script>
 </body>
 </html>
+
